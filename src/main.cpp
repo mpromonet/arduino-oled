@@ -22,6 +22,12 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <Adafruit_MPU6050.h>
+#include <Adafruit_HMC5883_U.h>
+
+Adafruit_MPU6050 mpu;
+
+Adafruit_HMC5883_Unified mag = Adafruit_HMC5883_Unified(12345);
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
@@ -348,7 +354,22 @@ void testanimate(const uint8_t *bitmap, uint8_t w, uint8_t h) {
 }
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
+
+  if (!mpu.begin()) {
+    Serial.println("Sensor init failed");
+    while (1)
+      yield();
+  }
+  Serial.println("Found a MPU-6050 sensor");
+
+  /* Initialise the sensor */
+  if(!mag.begin())
+  {
+    /* There was a problem detecting the HMC5883 ... check your connections */
+    Serial.println("Ooops, no HMC5883 detected ... Check your wiring!");
+    while(1);
+  }
 
   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
   if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
@@ -412,5 +433,73 @@ void setup() {
 }
 
 void loop() {
+  sensors_event_t a, g, temp;
+  mpu.getEvent(&a, &g, &temp);
+
+  sensors_event_t event; 
+  mag.getEvent(&event);  
+
+  display.clearDisplay();
+  display.setCursor(0, 0);
+
+  Serial.print("Accelerometer ");
+  Serial.print("X: ");
+  Serial.print(a.acceleration.x, 1);
+  Serial.print(" m/s^2, ");
+  Serial.print("Y: ");
+  Serial.print(a.acceleration.y, 1);
+  Serial.print(" m/s^2, ");
+  Serial.print("Z: ");
+  Serial.print(a.acceleration.z, 1);
+  Serial.println(" m/s^2");
+
+  display.println("Accelerometer - m/s^2");
+  display.print(a.acceleration.x, 1);
+  display.print(", ");
+  display.print(a.acceleration.y, 1);
+  display.print(", ");
+  display.print(a.acceleration.z, 1);
+  display.println("");
+
+  Serial.print("Gyroscope ");
+  Serial.print("X: ");
+  Serial.print(g.gyro.x, 1);
+  Serial.print(" rps, ");
+  Serial.print("Y: ");
+  Serial.print(g.gyro.y, 1);
+  Serial.print(" rps, ");
+  Serial.print("Z: ");
+  Serial.print(g.gyro.z, 1);
+  Serial.println(" rps");
+
+  display.println("Gyroscope - rps");
+  display.print(g.gyro.x, 1);
+  display.print(", ");
+  display.print(g.gyro.y, 1);
+  display.print(", ");
+  display.print(g.gyro.z, 1);
+  display.println("");
+
+  Serial.print("Magnetometer ");
+  Serial.print("X: ");
+  Serial.print(event.magnetic.x, 1);
+  Serial.print(" rps, ");
+  Serial.print("Y: ");
+  Serial.print(event.magnetic.y, 1);
+  Serial.print(" rps, ");
+  Serial.print("Z: ");
+  Serial.print(event.magnetic.z, 1);
+  Serial.println(" rps");
+
+  display.println("Magnetometer ");
+  display.print(event.magnetic.x, 1);
+  display.print(", ");
+  display.print(event.magnetic.y, 1);
+  display.print(", ");
+  display.print(event.magnetic.z, 1);
+  display.println("");
+
+  display.display();
+  delay(100);  
 }
 
