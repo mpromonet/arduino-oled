@@ -31,9 +31,8 @@ Adafruit_HMC5883_Unified mag = Adafruit_HMC5883_Unified(12345);
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 32 // OLED display height, in pixels
-#define OLED_RESET     4 // Reset pin # (or -1 if sharing Arduino reset pin)
 #define SCREEN_ADDRESS 0x3C ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
-Adafruit_SSD1306 display(SCREEN_WIDTH,SCREEN_HEIGHT, &Wire, OLED_RESET);
+Adafruit_SSD1306 display(SCREEN_WIDTH,SCREEN_HEIGHT, &Wire);
 
 void setup() {
   Serial.begin(115200);
@@ -99,7 +98,7 @@ void loop() {
   Serial.print(a.acceleration.z, 1);
   Serial.println(" m/s^2");
 
-  display.println("Accelerometer - m/s^2");
+  display.print("A: ");
   display.print(a.acceleration.x, 1);
   display.print(", ");
   display.print(a.acceleration.y, 1);
@@ -121,13 +120,16 @@ void loop() {
   Serial.print("Temperature ");
   Serial.println(temp.temperature, 1);
 
-  display.println("Gyroscope - rps");
+  display.print("G: ");
   display.print(g.gyro.x, 1);
   display.print(", ");
   display.print(g.gyro.y, 1);
   display.print(", ");
   display.print(g.gyro.z, 1);
   display.println("");
+
+  display.print("T: ");
+  display.println(temp.temperature, 1);
 
   Serial.print("Magnetometer ");
   Serial.print("X: ");
@@ -140,7 +142,7 @@ void loop() {
   Serial.print(event.magnetic.z, 1);
   Serial.println(" rps");
 
-  display.println("Magnetometer ");
+  display.print("M: ");
   display.print(event.magnetic.x, 1);
   display.print(", ");
   display.print(event.magnetic.y, 1);
