@@ -31,42 +31,37 @@ Adafruit_HMC5883_Unified mag = Adafruit_HMC5883_Unified(12345);
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 32 // OLED display height, in pixels
-
-// Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
-// The pins for I2C are defined by the Wire-library. 
-// On an arduino UNO:       A4(SDA), A5(SCL)
-// On an arduino MEGA 2560: 20(SDA), 21(SCL)
-// On an arduino LEONARDO:   2(SDA),  3(SCL), ...
 #define OLED_RESET     4 // Reset pin # (or -1 if sharing Arduino reset pin)
 #define SCREEN_ADDRESS 0x3C ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
 Adafruit_SSD1306 display(SCREEN_WIDTH,SCREEN_HEIGHT, &Wire, OLED_RESET);
-
 
 void setup() {
   Serial.begin(115200);
 
   if (!mpu.begin()) {
-    Serial.println("Sensor init failed");
+    Serial.println("MPU init failed");
     while (1)
       yield();
   }
-  Serial.println("Found a MPU-6050 sensor");
+  mpu.setI2CBypass(true);
+  mpu.enableSleep(false);
+  Serial.println(F("Found a MPU-6050 sensor"));
 
   /* Initialise the sensor */
   if(!mag.begin())
   {
     /* There was a problem detecting the HMC5883 ... check your connections */
-    Serial.println("Ooops, no HMC5883 detected ... Check your wiring!");
+    Serial.println(F("MAG init failed"));
     while(1);
   }
-  Serial.println("Found a HMC5883  sensor");
+  Serial.println(F("Found a HMC5883  sensor"));
 
   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
   if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
     Serial.println(F("SSD1306 allocation failed"));
     for(;;); // Don't proceed, loop forever
   }
-  Serial.println("Found a SSD1306  sensor");
+  Serial.println(F("Found a SSD1306  sensor"));
 
   // Show initial display buffer contents on the screen --
   // the library initializes this with an Adafruit splash screen.
@@ -78,12 +73,9 @@ void setup() {
   display.setTextSize(1);             
   display.setTextColor(SSD1306_WHITE);        
   display.setCursor(0,0);   
-  display.print("Init");
+  display.print("GY-86");
   display.display();
   delay(2000);
-
-  Serial.println("End of setup");
-  
 }
 
 void loop() {
@@ -91,7 +83,7 @@ void loop() {
   mpu.getEvent(&a, &g, &temp);
 
   sensors_event_t event; 
-//  mag.getEvent(&event);  
+  mag.getEvent(&event);  
 
   display.clearDisplay();
   display.setCursor(0, 0);
@@ -125,6 +117,9 @@ void loop() {
   Serial.print("Z: ");
   Serial.print(g.gyro.z, 1);
   Serial.println(" rps");
+
+  Serial.print("Temperature ");
+  Serial.println(temp.temperature, 1);
 
   display.println("Gyroscope - rps");
   display.print(g.gyro.x, 1);
