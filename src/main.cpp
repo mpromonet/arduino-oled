@@ -27,7 +27,7 @@
 
 Adafruit_MPU6050 mpu;
 
-Adafruit_HMC5883_Unified mag = Adafruit_HMC5883_Unified(12345);
+Adafruit_HMC5883_Unified mag;
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 32 // OLED display height, in pixels
@@ -43,7 +43,9 @@ void setup() {
       yield();
   }
   mpu.setI2CBypass(true);
-  mpu.enableSleep(false);
+  mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
+  mpu.setGyroRange(MPU6050_RANGE_1000_DEG);
+  mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);  
   Serial.println(F("Found a MPU-6050 sensor"));
 
   /* Initialise the sensor */
@@ -53,7 +55,8 @@ void setup() {
     Serial.println(F("MAG init failed"));
     while(1);
   }
-  Serial.println(F("Found a HMC5883  sensor"));
+  mag.setMagGain(HMC5883_MAGGAIN_4_0); 
+  Serial.println(F("Found a HMC5883 sensor"));
 
   // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
   if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
